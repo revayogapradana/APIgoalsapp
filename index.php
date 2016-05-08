@@ -10,13 +10,13 @@
 	    $cn = mysqli_connect( $host, $user, $pass, $dbname );
 	    
 	    //url/login/email/password
-	    if ( $_POST['type'] == "login" ) {
+	    if ( $_GET['type'] == "login" ) {
 	    	$query = 	"SELECT
 	    					AKUN_ID, EMAIL, USERNAME, FOTO
 		                from
 		                 	AKUN
 		                where
-		                  AKUN.EMAIL = \"" . $_POST['p1'] . "\" AND AKUN.PASSWORD = \"" . $_POST['p2'] . "\"
+		                  AKUN.EMAIL = \"" . $_GET['p1'] . "\" AND AKUN.PASSWORD = \"" . $_GET['p2'] . "\"
 		                limit 1";
 	    	
 		    $result = mysqli_query( $cn, $query );
