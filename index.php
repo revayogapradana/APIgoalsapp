@@ -1,7 +1,7 @@
 <?php
 	header( 'Access-Control-Allow-Origin: *');
-
-	if(isset($_GET['type'])){
+	// echo $_POST['type'] . "aaa";
+	if(!empty($_POST['type'])){
 		// koneksi database
 	    $host = "localhost";        // lokasi database
 	    $user = "revoreva_goalsap";             // nama username
@@ -10,13 +10,13 @@
 	    $cn = mysqli_connect( $host, $user, $pass, $dbname );
 	    
 	    //url/login/email/password
-	    if ( $_GET['type'] == "login" ) {
+	    if ( $_POST['type'] == "login" ) {
 	    	$query = 	"SELECT
 	    					AKUN_ID, EMAIL, USERNAME, FOTO
 		                from
 		                 	AKUN
 		                where
-		                  AKUN.EMAIL = \"" . $_GET['p1'] . "\" AND AKUN.PASSWORD = \"" . $_GET['p2'] . "\"
+		                  AKUN.EMAIL = \"" . $_POST['p1'] . "\" AND AKUN.PASSWORD = \"" . $_POST['p2'] . "\"
 		                limit 1";
 	    	
 		    $result = mysqli_query( $cn, $query );
@@ -30,11 +30,11 @@
 		    	echo '{"status":200, "message":"login sukses", "data":' . json_encode( $var ) . '}';
 		    else
 		    	echo '{"status":200, "message":"login gagal"}';
-	    } else if($_GET['type'] == 'register'){
+	    } else if($_POST['type'] == 'register'){
 	    	//register/username/email/password/foto
 	    	//register/p1      /p2   /p3      /p4
 
-	    	$query = "INSERT INTO AKUN(USERNAME, EMAIL, PASSWORD, FOTO) VALUES (" . $_GET['p1'] . "," . $_GET['p2'] . "," . $_GET['p3'] . "," . $_GET['p4'] . ")";
+	    	$query = "INSERT INTO AKUN(USERNAME, EMAIL, PASSWORD, FOTO) VALUES (" . $_POST['p1'] . "," . $_POST['p2'] . "," . $_POST['p3'] . "," . $_POST['p4'] . ")";
         	
 		    $result = mysqli_query( $cn, $query );
 		    
@@ -44,7 +44,7 @@
 		                from
 		                 	AKUN
 		                where
-		                  AKUN.EMAIL = \"" . $_GET['p2'] . "\"
+		                  AKUN.EMAIL = \"" . $_POST['p2'] . "\"
 		                limit 1";
 	    	
 			    $result = mysqli_query( $cn, $query );
