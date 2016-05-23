@@ -128,7 +128,7 @@
 		    
 		    if($result){
 		    	$query = 	"SELECT
-	    					TARGET_ID, FOTO, SALDO, HARGA, DUE_DATE
+	    					NAMA, TARGET_ID, FOTO, SALDO, HARGA, DUE_DATE
 		                FROM
 		                 	TARGET
 		                WHERE
@@ -199,12 +199,12 @@
 	    	//ngurangi rekening akun, nambah saldo di target, 
 	    	//INSERT INTO log_transaksi: akun_id, kategori_transaksi_id, nama, jumlah, jenis, tanggal
 	    	//UPDATE AKUN SET rekening = new amount
-	    	$query = "INSERT INTO LOG_TRANSAKSI(AKUN_ID, KATEGORI_TRANSAKSI_ID, NAMA, JUMLAH, JENIS, TANGGAL) VALUES (" . $_POST['AKUN_ID'] . "," . $_POST['KATEGORI_TRANSAKSI_ID'] . ",\"" . $_POST['NAMA'] . "\",\"" . $_POST['JUMLAH'] . "\"," . $_POST['JENIS'] . ",\"" . $_POST['TANGGAL'] . "\")";
+	    	$INITIAL_REKENING = $_POST['REKENING'];
+	    	$query = "INSERT INTO LOG_TRANSAKSI(AKUN_ID, KATEGORI_TRANSAKSI_ID, NAMA, JUMLAH, JENIS, TANGGAL, NOTE, `WITH`, LOCATION, REMINDER) VALUES (" . $_POST['AKUN_ID'] . "," . $_POST['KATEGORI_TRANSAKSI_ID'] . ",\"" . $_POST['NAMA'] . "\",\"" . $_POST['JUMLAH'] . "\"," . $_POST['JENIS'] . ",\"" . $_POST['TANGGAL'] . "\",\"" . $_POST['NOTE'] . "\",\"" . $_POST['WITH'] . "\",\"" . $_POST['LOCATION'] . "\",\"" . $_POST['REMINDER'] . "\")";
         	
 		    $result = mysqli_query( $cn, $query );
 		    
 		    if($result){
-		    	$INITIAL_REKENING = $_POST['REKENING'];
 		    	if($_POST['JENIS'] == '1' || ($_POST['JENIS'] == '0' && $_POST['KATEGORI_TRANSAKSI_ID'] == '15'))
 		    		$NEW_AMOUNT = intval($_POST['REKENING']) - intval($_POST['JUMLAH']);
 		    	else
@@ -218,11 +218,11 @@
 			    	echo '{"status":200, "message":"tambah data transaksi sukses", "rekening": "' . $NEW_REKENING . '"}';
 			    }
 			    else
-			    	echo '{"status":300, "message":"tambah data transaksi gagal", "rekening":"' . $INITIAL_REKENING . '"}';
+			    	echo '{"status":300, "message":"tambah data transaksi gagal (2)", "rekening":"' . $INITIAL_REKENING . '"}';
 		    	// echo '{"status":200, "message":"get list target sukses", "data":' . json_encode( $var ) . '}';
 		    }
 		    else
-		    	echo '{"status":300, "message":"tambah data transaksi gagal", "rekening":"' . $INITIAL_REKENING . '"}';
+		    	echo '{"status":300, "message":"tambah data transaksi gagal (1): ' . $query .  ' ", "rekening":"' . $INITIAL_REKENING . '"}';
 	    } else if($_POST['TYPE'] == 'get_transaksi'){
 	    	//list_target/AKUN_ID
 	    	
@@ -258,7 +258,7 @@
 	    	//list_target/AKUN_ID
 	    	
 	    	$query = 	"SELECT
-	    					TARGET_ID, FOTO, SALDO, HARGA, DUE_DATE
+	    					NAMA, TARGET_ID, FOTO, SALDO, HARGA, DUE_DATE
 		                FROM
 		                 	TARGET
 		                WHERE
