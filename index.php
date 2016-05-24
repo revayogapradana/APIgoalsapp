@@ -44,6 +44,20 @@
 		    	echo '{"status":200, "message":"login sukses", "data":' . json_encode( $var ) . '}';
 		    else
 		    	echo '{"status":300, "message":"login gagal"}';
+	    } else if ( $_POST['TYPE'] == "get_account" ) {
+	    	$query = 	"SELECT
+	    					EMAIL, USERNAME, PASSWORD, FOTO
+		                from
+		                 	AKUN
+		                where
+		                  AKUN.AKUN_ID = \"" . $_POST['AKUN_ID'] . "\" limit 1";
+	    	
+		    $result = mysqli_query( $cn, $query );
+		    $var = array();
+		    while ( $obj = mysqli_fetch_object( $result ) ) {
+		    	$var[] = $obj;
+		    }
+		    echo '{"status":200, "message":"get data sukses", "data":' . json_encode( $var ) . '}';
 	    } else if($_POST['TYPE'] == 'register'){
 	    	//register/username/email/password/foto
 	    	if(!empty($_POST['FOTO'])){
@@ -66,7 +80,9 @@
 		                from
 		                 	AKUN
 		                where
-		                  AKUN.EMAIL = \"" . $_POST['EMAIL'] . "\"
+		                  AKUN.EMAIL = \"" . $_POST['EMAIL'] . "\" AND
+		                  AKUN.USERNAME = \"" . $_POST['USERNAME'] . "\" AND
+		                  AKUN.PASSWORD = \"" . $_POST['PASSWORD'] . "\"
 		                limit 1";
 	    	
 			    $result = mysqli_query( $cn, $query );
@@ -79,6 +95,48 @@
 		    }
 		    else
 		    	echo '{"status":300, "message":"registrasi gagal"}';
+	    } else if($_POST['TYPE'] == 'update_account'){
+	    	if($_POST['UPDATE_FOTO'] == 1){
+	    		$foto = $_POST['FOTO'];
+				$nama = uniqid().'.jpg';
+				$img = base64_to_jpeg($foto, $nama);
+				rename(''.$nama, 'uploads/'.$nama);
+				$path = "http://goalsapp.heliohost.org/uploads/".$img;
+
+	    		$query = "UPDATE AKUN SET EMAIL = \"" . $_POST['EMAIL'] . "\", PASSWORD = \"" . $_POST['PASSWORD'] . "\", FOTO = \"" . $path . "\" WHERE AKUN_ID = " . $_POST['AKUN_ID'];
+	    	}
+        	else
+        		$query = "UPDATE AKUN SET EMAIL = \"" . $_POST['EMAIL'] . "\", PASSWORD = \"" . $_POST['PASSWORD'] . "\" WHERE AKUN_ID = " . $_POST['AKUN_ID'];
+		    $result = mysqli_query( $cn, $query );
+		    
+		    if($result){
+			    $query = 	"SELECT
+	    					EMAIL, FOTO
+		                from
+		                 	AKUN
+		                where
+		                  AKUN.AKUN_ID = \"" . $_POST['AKUN_ID'] . "\"
+		                limit 1";
+	    	
+			    $result = mysqli_query( $cn, $query );
+			    $var = array();
+			    while ( $obj = mysqli_fetch_object( $result ) ) {
+			    	$var[] = $obj;
+			    }
+			    echo '{"status":200, "message":"update akun sukses", "data":' . json_encode( $var ) . '}';
+		    }
+		    else
+		    	echo '{"status":300, "message":"update akun gagal"}';
+	    } else if($_POST['TYPE'] == 'delete_target'){
+	    	$query = "DELETE FROM TARGET WHERE TARGET_ID = \"" . $_POST['TARGET_ID'] . "\"";
+        	
+		    $result = mysqli_query( $cn, $query );
+		    
+		    if($result){
+			    echo '{"status":200, "message":"hapus data sukses"}';
+		    }
+		    else
+		    	echo '{"status":200, "message":"hapus data gagal"}';
 	    } else if($_POST['TYPE'] == 'budget'){
 
 	    	$query = "UPDATE AKUN SET REKENING = \"" . $_POST['REKENING'] . "\" WHERE AKUN_ID = " . $_POST['AKUN_ID'];
@@ -86,7 +144,7 @@
 		    $result = mysqli_query( $cn, $query );
 		    
 		    if($result){
-			    echo '{"status":200, "message":"penambahan data keuangan sukses"}';
+			    echo '{"status":200, "message":"penambahan data keuangan sukses", "rekening": "' . $_POST['REKENING'] . '"}';
 		    }
 		    else
 		    	echo '{"status":300, "message":"penambahan data keuangan gagal"}';
@@ -98,7 +156,8 @@
 		                FROM
 		                 	TARGET
 		                WHERE
-		                  	AKUN_ID = " . $_POST['AKUN_ID'];
+		                  	AKUN_ID = " . $_POST['AKUN_ID'] .
+		                " ORDER BY TARGET_ID ASC";
 	    	
 		    $result = mysqli_query( $cn, $query );
 		    $var = array();
@@ -242,6 +301,70 @@
 							LOG_TRANSAKSI.TARGET_ID = 0 AND 
 							KATEGORI_TRANSAKSI.KATEGORI_TRANSAKSI_ID = LOG_TRANSAKSI.KATEGORI_TRANSAKSI_ID AND 
 							LOG_TRANSAKSI.TANGGAL = DATE(DATE_ADD(NOW(), INTERVAL 14 HOUR))";
+	    	
+		    $result = mysqli_query( $cn, $query );
+		    $var = array();
+		    $ada = 0;
+		    while ( $obj = mysqli_fetch_object( $result ) ) {
+		    	$var[] = $obj;
+		    	$ada = 1;
+		    }
+		    if($ada == 1)
+		    	echo '{"status":200, "message":"get list transaksi sukses", "data":' . json_encode( $var ) . '}';
+		    else
+		    	echo '{"status":300, "message":"get list transaksi gagal/tidak ada"}';
+	    } else if($_POST['TYPE'] == 'get_transaksi_day'){
+	    	//list_target/AKUN_ID
+	    	
+	    	$query = 	"SELECT 
+	    					LOG_TRANSAKSI.JENIS,
+	    					LOG_TRANSAKSI.LOG_TRANSAKSI_ID AS ID,
+	    					LOG_TRANSAKSI.NAMA AS NAMA_TRANSAKSI, 
+	    					LOG_TRANSAKSI.JUMLAH, 
+	    					KATEGORI_TRANSAKSI.KATEGORI_TRANSAKSI_ID AS KATEGORI_TRANSAKSI_ID,
+	    					KATEGORI_TRANSAKSI.NAMA AS KATEGORI, 
+	    					KATEGORI_TRANSAKSI.FOTO
+						FROM 
+							LOG_TRANSAKSI, 
+							KATEGORI_TRANSAKSI
+						WHERE 
+							LOG_TRANSAKSI.AKUN_ID = " . $_POST['AKUN_ID'] . " AND 
+							LOG_TRANSAKSI.TARGET_ID = 0 AND 
+							KATEGORI_TRANSAKSI.KATEGORI_TRANSAKSI_ID = LOG_TRANSAKSI.KATEGORI_TRANSAKSI_ID AND 
+							LOG_TRANSAKSI.TANGGAL = \"" . $_POST['TANGGAL'] . "\"";
+	    	
+		    $result = mysqli_query( $cn, $query );
+		    $var = array();
+		    $ada = 0;
+		    while ( $obj = mysqli_fetch_object( $result ) ) {
+		    	$var[] = $obj;
+		    	$ada = 1;
+		    }
+		    if($ada == 1)
+		    	echo '{"status":200, "message":"get list transaksi sukses", "data":' . json_encode( $var ) . '}';
+		    else
+		    	echo '{"status":300, "message":"get list transaksi gagal/tidak ada"}';
+	    } else if($_POST['TYPE'] == 'get_transaksi_month'){
+	    	//list_target/AKUN_ID
+	    	
+	    	$query = 	"SELECT 
+	    					LOG_TRANSAKSI.JENIS,
+	    					LOG_TRANSAKSI.LOG_TRANSAKSI_ID AS ID,
+	    					LOG_TRANSAKSI.NAMA AS NAMA_TRANSAKSI, 
+	    					LOG_TRANSAKSI.JUMLAH, 
+	    					KATEGORI_TRANSAKSI.KATEGORI_TRANSAKSI_ID AS KATEGORI_TRANSAKSI_ID,
+	    					KATEGORI_TRANSAKSI.NAMA AS KATEGORI, 
+	    					KATEGORI_TRANSAKSI.FOTO,
+	    					DAY(LOG_TRANSAKSI.TANGGAL) AS DAY
+						FROM 
+							LOG_TRANSAKSI, 
+							KATEGORI_TRANSAKSI
+						WHERE 
+							LOG_TRANSAKSI.AKUN_ID = " . $_POST['AKUN_ID'] . " AND 
+							LOG_TRANSAKSI.TARGET_ID = 0 AND 
+							KATEGORI_TRANSAKSI.KATEGORI_TRANSAKSI_ID = LOG_TRANSAKSI.KATEGORI_TRANSAKSI_ID AND 
+							MONTH(LOG_TRANSAKSI.TANGGAL) = \"" . $_POST['MONTH'] . "\"
+						ORDER BY DAY";
 	    	
 		    $result = mysqli_query( $cn, $query );
 		    $var = array();
