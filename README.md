@@ -1,5 +1,5 @@
 # APIgoalsapp
-API untuk setyourgoalsapp
+API untuk setyourgoalsapp (link repo FE Apps: https://github.com/ikrom/goalsapp-cordova)
 
 goalsapp.heliohost.org
 
